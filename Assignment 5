@@ -1,0 +1,33 @@
+# Define a function that gets three test scores and calculates the average
+def get_average():
+# Ask the user to enter scores for three tests
+test1 = float(input("Enter score for test 1: "))
+test2 = float(input("Enter score for test 2: "))
+test3 = float(input("Enter score for test 3: "))
+# Calculate the average of the three scores
+average = (test1 + test2 + test3) / 3
+#Calculated average adn return to the main function
+return average
+# Function that checks the average and displays a message
+def check_average(avg):
+# If the average is greater than 95
+if avg > 95:
+print("WOW! Keep up the Great Work")
+# If the average is between 85 and 95
+elif avg >= 85:
+print("Wow I can tell you've worked hard, keep going your almost at the top.")
+# If the average is between 70 and 84
+elif avg >= 70:
+print("Not too bad, but we know you can do way better next time.")
+# If the average is below 70
+else:
+print("You don't study and it shows.")
+# Starting point of the program
+def main():
+# Call get_average() to compute the average score
+average = get_average()
+# Display the average using an f-string
+print(f"Your average score is: {average:.2f}")
+# Call check_average() to display the message based on the average
+check_average(average)
+# Call the main function to start the program
