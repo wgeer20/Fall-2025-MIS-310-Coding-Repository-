@@ -1,0 +1,155 @@
+from tkinter import *
+from PIL import Image, ImageTk
+import pandas as pd
+# -------------------------
+# Create the main window
+# -------------------------
+root = Tk()
+root.title("Central Connecticut State University")
+root.geometry("1000x850") # spacious layout for all elements
+root.configure(bg="light blue")
+# -------------------------
+# Load and display logo (top-left corner)
+# -------------------------
+try:
+img = Image.open('C:\\Users\\Owner\\Pictures\\logo1.png') # your logo path
+img = img.resize((130, 130), Image.Resampling.LANCZOS)
+photo = ImageTk.PhotoImage(img)
+label_img = Label(root, image=photo, bg="light blue")
+label_img.place(x=20, y=20) # top-left corner
+except Exception as e:
+print("Logo not found or failed to load:", e)
+label_img = Label(root, text="[Logo Missing]", bg="light blue", font=("Arial", 12))
+label_img.place(x=20, y=20)
+# -------------------------
+# University title
+# -------------------------
+label_text = Label(
+root,
+text="Central Connecticut State University",
+font=("Arial", 24, "bold"),
+bg="light blue",
+fg="dark blue"
+)
+label_text.place(x=180, y=50)
+# -------------------------
+# Load CSV data
+# -------------------------
+try:
+data = pd.read_csv("midterm_exam.csv")
+except FileNotFoundError:
+print("Error: 'midterm_exam.csv' not found in this folder.")
+data = pd.DataFrame()
+# -------------------------
+# Output area
+# -------------------------
+output_label = Label(
+root,
+text="",
+justify="left",
+bg="white",
+fg="black",
+anchor="nw",
+font=("Arial", 11),
+width=110,
+height=25,
+wraplength=850,
+relief="groove"
+)
+output_label.place(x=70, y=380)
+# -------------------------
+# Helper to clear previous output
+# -------------------------
+def clear_output():
+output_label.config(text="", bg="white")
+# -------------------------
+# Button functions
+# -------------------------
+def show_calendar():
+clear_output()
+if 'CalendarDate' in data.columns:
+df = data[['CalendarDate']].dropna()
+output_label.config(text=df.to_string(index=False), bg="#E0FFFF") # light cyan
+else:
+output_label.config(text="Column 'CalendarDate' not found in CSV.", bg="#E0FFFF")
+def show_buildings():
+clear_output()
+if 'Buildings' in data.columns:
+df = data[['Buildings']].dropna()
+
+
+
+output_label.config(text=df.to_string(index=False), bg="#FAFAD2") # light yellow
+else:
+output_label.config(text="Column 'Buildings' not found in CSV.", bg="#FAFAD2")
+def show_faculty():
+clear_output()
+if 'FacultyName' in data.columns:
+df = data[['FacultyName']].dropna()
+output_label.config(text=df.to_string(index=False), bg="#E6E6FA") # lavender
+else:
+output_label.config(text="Column 'FacultyName' not found in CSV.", bg="#E6E6FA")
+def show_mis_department():
+clear_output()
+courses = [
+"Intro to MIS",
+"Intro to MIS",
+"Databases Management",
+"Systems Analysis & Design",
+"Business Analytics / Data Visualization",
+"Network and Information Security",
+"Project Management"
+]
+text = "MIS Department:\n\n" + "\n".join(courses)
+output_label.config(text=text, bg="#F0FFF0") # honeydew background
+# -------------------------
+# Button frame (horizontal layout)
+# -------------------------
+button_frame = Frame(root, bg="light blue")
+button_frame.place(x=120, y=250)
+button_style = {
+"bg": "navy",
+"fg": "white",
+"font": ("Arial", 11, "bold"),
+"width": 18,
+"height": 1
+}
+btn_calendar = Button(button_frame, text="Calendar", command=show_calendar, **button_style)
+btn_calendar.grid(row=0, column=0, padx=8)
+btn_buildings = Button(button_frame, text="Buildings", command=show_buildings, **button_style)
+btn_buildings.grid(row=0, column=1, padx=8)
+btn_faculty = Button(button_frame, text="Faculty", command=show_faculty, **button_style)
+btn_faculty.grid(row=0, column=2, padx=8)
+btn_mis = Button(button_frame, text="MIS Department", command=show_mis_department, **button_style)
+btn_mis.grid(row=0, column=3, padx=8)
+# -------------------------
+# MIS Department List (always visible under buttons)
+# -------------------------
+mis_department_text = (
+"MIS Department:\n"
+"• Intro to MIS\n"
+"• Intro to MIS\n"
+"• Databases Management\n"
+"• Systems Analysis & Design\n"
+"• Business Analytics / Data Visualization\n"
+"• Network and Information Security\n"
+"• Project Management"
+)
+mis_department_label = Label(
+root,
+text=mis_department_text,
+font=("Arial", 12),
+justify="left",
+bg="#F0FFF0", # honeydew
+fg="black",
+relief="groove",
+padx=10,
+pady=10,
+width=70,
+anchor="w"
+)
+mis_department_label.place(x=160, y=310)
+# -------------------------
+# Run the main loop
+# -------------------------
+root.mainloop()
