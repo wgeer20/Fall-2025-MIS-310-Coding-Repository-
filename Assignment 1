@@ -1,0 +1,13 @@
+# BMI Calculator
+# Get Inputs From Users
+height_inches = float(input("Enter height (inches): "))
+weight_pounds = float(input("Enter weight (pounds): "))
+# Processing - Calculate the BMI results:
+bmi = (weight_pounds / (height_inches ** 2)) * 703
+# Convert measurements
+weight_kg = weight_pounds *.453592
+height_m = height_inches * .0254
+bmi_metric = weight_kg / (height_m ** 2)
+# Output
+print(f'BMI value for a person height of {height_inches} and of {weight_pounds} formatted using the f string is:(round(bmi, 1))')
+print(f'BMI value for a person height of {height_m} and of {weight_kg} formatted using the f string is:(round(bmi_metric, 1))')
