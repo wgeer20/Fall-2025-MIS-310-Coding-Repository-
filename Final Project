@@ -1,0 +1,288 @@
+""" 
+Resume-to-Job Match Ranking System 
+---------------------------------- 
+This script: 
+ 
+1. Creates embeddings for job descriptions and resumes. 
+2. Computes cosine similarity between them. 
+3. Ranks resumes for each job posting. 
+4. Prints the results in a clean table. 
+ 
+Dependencies: 
+    pip install langchain-openai scikit-learn numpy python-dotenv 
+""" 
+ 
+import os 
+from dotenv import load_dotenv 
+import numpy as np 
+from sklearn.metrics.pairwise import cosine_similarity 
+from langchain_openai import OpenAIEmbeddings 
+ 
+# ----------------------------------------------------------- 
+#  LOAD API KEY 
+# ----------------------------------------------------------- 
+load_dotenv() 
+API_KEY = os.getenv("API KEY")
+ 
+ 
+embeddings_model = OpenAIEmbeddings( 
+    model="text-embedding-3-large", 
+    api_key=("Open API Key") 
+# ----------------------------------------------------------- 
+#  SAMPLE JOB DESCRIPTIONS 
+# ----------------------------------------------------------- 
+job_descriptions = { 
+    "Registered Nurse (RN)": """ 
+Provide high-quality clinical care; administer medications; monitor vital signs;  
+develop care plans; collaborate with multidisciplinary teams; maintain accurate documentation. 
+""", 
+ 
+    "Construction Project Engineer": """ 
+Manage RFIs, submittals, and documentation; coordinate with contractors; track project progress;  
+prepare reports; support schedule updates; maintain accurate project records. 
+""", 
+} 
+ 
+# ----------------------------------------------------------- 
+#  SAMPLE RESUMES (3) 
+# ----------------------------------------------------------- 
+resumes = { 
+    "Resume A - Nurse": """ 
+Registered Nurse with 5 years in acute care. Skilled in patient assessment, medication  
+administration, IV therapy, wound care, interdisciplinary collaboration, and EMR systems like Epic. 
+""", 
+ 
+    "Resume B - Project Engineer": """ 
+Civil engineer with experience managing RFIs, submittals, construction documentation,  
+meeting minutes, site inspections, and contractor coordination using AASHTOWare and Procore. 
+""", 
+ 
+    "Resume C - Retail Associate": """ 
+Retail professional with customer service experience, cash handling, stocking, loss prevention,  
+and POS system operation. Strong communication and teamwork. 
+""" 
+} 
+ 
+# ----------------------------------------------------------- 
+#  EMBED JOBS + RESUMES 
+# ----------------------------------------------------------- 
+print("\nGenerating embeddings...") 
+ 
+job_vectors = { 
+    job_title: np.array(embeddings_model.embed_query(description)) 
+    for job_title, description in job_descriptions.items() 
+} 
+ 
+resume_vectors = { 
+    resume_name: np.array(embeddings_model.embed_query(text)) 
+    for resume_name, text in resumes.items() 
+} 
+ 
+# ----------------------------------------------------------- 
+#  COMPUTE SIMILARITY + RANK RESUMES 
+# ----------------------------------------------------------- 
+def rank_resumes_for_job(job_title, job_vec): 
+    """Return a sorted list of (resume, score).""" 
+    results = [] 
+ 
+    for resume_name, resume_vec in resume_vectors.items(): 
+        similarity = cosine_similarity( 
+            job_vec.reshape(1, -1), 
+            resume_vec.reshape(1, -1) 
+        )[0][0] 
+ 
+        results.append((resume_name, float(similarity))) 
+ 
+    return sorted(results, key=lambda x: x[1], reverse=True) 
+ 
+# ----------------------------------------------------------- 
+#  OUTPUT RANKED RESULTS 
+# ----------------------------------------------------------- 
+print("\n==============================") 
+print(" RESUME MATCH RESULTS") 
+print("==============================\n") 
+ 
+for job_title, job_vec in job_vectors.items(): 
+    print(f"\n🔹 Job Posting: {job_title}") 
+    print("-" * 50) 
+ 
+    ranked = rank_resumes_for_job(job_title, job_vec) 
+ 
+    for resume_name, score in ranked: 
+        print(f"{resume_name:<30}  →  Similarity: {score:.4f}") 
+ 
+    print("\n") 
+ 
+ 
+print("\nDone!") 
+ 
+""" 
+Resume-to-Job Match Project 
+--------------------------- 
+This program demonstrates how Python can automate and simplify the process of connecting job seekers 
+with potential employers by comparing a user's uploaded resume and job preferences to available listings. 
+ 
+Key Features: 
+- Tkinter GUI for user interaction (upload resume, enter job keywords, view matches) 
+- Use of difflib to compare text similarity between resumes and job descriptions 
+- Basic data handling using built-in Python libraries (os, csv, json) 
+- Error handling and user feedback through message boxes 
+ 
+References: 
+Gaddis, T. (2024). Starting Out with Python (6th ed.). Pearson Education. 
+Python Software Foundation. (2025). tkinter — Python interface to Tcl/Tk documentation. 
+Chandra, R., Gupta, S., & Mishra, P. (2015). Automated data retrieval using API integration. 
+""" 
+ 
+# ----------------------------- 
+# Importing Libraries 
+# ----------------------------- 
+import tkinter as tk 
+from tkinter import filedialog, messagebox 
+import difflib   # Used for text similarity comparison 
+import os        # Handles file system operations 
+import csv       # Used for reading/writing job listing data 
+import json      # Used for saving or loading user preferences 
+ 
+ 
+class JobFinder: 
+    """ 
+    The JobFinder class represents the main GUI application. 
+ 
+    Responsibilities: 
+    - Building the Tkinter interface for user interaction. 
+    - Handling resume uploads and validating user input. 
+    - Comparing user-entered job keywords with mock job listings. 
+    - Displaying ranked job results in a Listbox. 
+    """ 
+ 
+    def __init__(self): 
+        """Initialize the main application window and setup widgets.""" 
+        self.window = tk.Tk() 
+        self.window.title("Resume-to-Job Match Finder") 
+        self.window.geometry("650x450") 
+        self.window.resizable(False, False) 
+ 
+        # Call setup function to build GUI components 
+        self.make_widgets() 
+ 
+        # Run the Tkinter main loop 
+        self.window.mainloop() 
+ 
+    # ---------------------------------------------------------- 
+    # GUI DESIGN: Labels, Buttons, Text Entries, and Listboxes 
+    # ---------------------------------------------------------- 
+    def make_widgets(self): 
+        """Constructs the GUI components using Tkinter widgets.""" 
+ 
+        # Resume Upload Section 
+        tk.Label(self.window, text="Upload Your Resume:").grid(row=0, column=0, padx=10, pady=10, sticky="w") 
+        self.resume_path = tk.StringVar() 
+        tk.Entry(self.window, textvariable=self.resume_path, width=45, state="readonly").grid(row=0, column=1, padx=5) 
+        tk.Button(self.window, text="Browse", command=self.upload_resume).grid(row=0, column=2, padx=5) 
+ 
+        # Job Search Section 
+        tk.Label(self.window, text="Job Keyword:").grid(row=1, column=0, padx=10, pady=10, sticky="w") 
+        self.job_entry = tk.Entry(self.window, width=45) 
+        self.job_entry.grid(row=1, column=1, columnspan=2, padx=5) 
+ 
+    # Buttons 
+        tk.Button(self.window, text="Find Jobs", command=self.find_jobs, bg="green", fg="white").grid(row=3, column=1, pady=10) 
+        tk.Button(self.window, text="Quit", command=self.window.quit, bg="red", fg="white").grid(row=3, column=2, pady=10) 
+ 
+        # Results Display 
+        tk.Label(self.window, text="Matching Job Results:").grid(row=4, column=0, padx=10, pady=10, sticky="w") 
+        self.result_box = tk.Listbox(self.window, width=75, height=12) 
+        self.result_box.grid(row=5, column=0, columnspan=3, padx=10) 
+ 
+    # ---------------------------------------------------------- 
+    # FILE HANDLING: Resume Upload Functionality 
+    # ---------------------------------------------------------- 
+    def upload_resume(self): 
+        """ 
+        Allows the user to upload a resume file. 
+        Provides validation and user feedback through message boxes. 
+        """ 
+        try: 
+            file_path = filedialog.askopenfilename( 
+                title="Select Resume", 
+                filetypes=[("PDF files", "*.pdf"), ("Word files", "*.docx"), ("Text files", "*.txt")] 
+            ) 
+            if file_path: 
+                self.resume_path.set(file_path) 
+                messagebox.showinfo("Upload Complete", "Your resume has been uploaded successfully!") 
+            else: 
+                messagebox.showwarning("No File Selected", "Please select a resume file to continue.") 
+        except Exception as e: 
+            messagebox.showerror("Error", f"An error occurred while uploading: {e}") 
+ 
+    # ---------------------------------------------------------- 
+    # CORE FUNCTIONALITY: Job Matching Logic 
+    # ---------------------------------------------------------- 
+    def find_jobs(self): 
+        """ 
+        Simulates the job matching process by comparing user keywords with predefined job listings. 
+        Uses difflib.SequenceMatcher to calculate similarity ratios and ranks matches. 
+        """ 
+        # Mock job dataset (could later be loaded from CSV/JSON) 
+        jobs = [ 
+            {"title": "Cashier", "type": "Part-Time", "description": "Retail, customer service, and cash handling."}, 
+            {"title": "Retail Worker", "type": "Seasonal", "description": "Stocking shelves, assisting customers."}, 
+            {"title": "Software Engineer", "type": "Full-Time", "description": "Python programming, debugging, teamwork."}, 
+            {"title": "Server", "type": "Part-Time", "description": "Serving customers and managing orders."}, 
+            {"title": "Warehouse Worker", "type": "Seasonal", "description": "Inventory management and lifting heavy boxes."}, 
+            {"title": "Teacher", "type": "Full-Time", "description": "Classroom management and student engagement."} 
+        ] 
+ 
+        # Clear old results 
+        self.result_box.delete(0, tk.END) 
+ 
+        # Get user input 
+        keyword = self.job_entry.get().strip().lower() 
+        job_type = self.job_type.get() 
+ 
+        try: 
+            # Check if a resume was uploaded 
+            if not self.resume_path.get(): 
+                messagebox.showwarning("Missing Resume", "Please upload your resume before searching.") 
+                return 
+ 
+            # Validate keyword 
+            if keyword == "": 
+                messagebox.showwarning("Missing Keyword", "Please enter at least one job keyword.") 
+                return 
+ 
+            # Perform job matching using difflib similarity ratios 
+            ranked_jobs = {} 
+            for job in jobs: 
+                if job_type.lower() == job["type"].lower():  # match by employment type 
+                    similarity = difflib.SequenceMatcher(None, keyword, job["description"].lower()).ratio() 
+                    ranked_jobs[job["title"]] = round(similarity * 100, 2) 
+ 
+            # Sort jobs by similarity score (descending) 
+            sorted_jobs = sorted(ranked_jobs.items(), key=lambda x: x[1], reverse=True) 
+ 
+            # Display results 
+            if sorted_jobs: 
+                for title, score in sorted_jobs: 
+                    self.result_box.insert(tk.END, f"{title} - {job_type} ({score}% match)") 
+            else: 
+                self.result_box.insert(tk.END, "No matching jobs found. Try adjusting your keyword or job type.") 
+ 
+        except Exception as e: 
+            messagebox.showerror("Error", f"An unexpected error occurred: {e}") 
+ 
+ 
+# ---------------------------------------------------------- 
+# MAIN PROGRAM EXECUTION 
+# ---------------------------------------------------------- 
+if __name__ == "__main__": 
+    """ 
+    The main entry point of the program.  
+   Initializes the JobFinder GUI application and handles any critical startup exceptions. 
+    """ 
+    try: 
+        JobFinder() 
+    except Exception as error: 
+        print("An error occurred while starting the application:", error) 
+ 
