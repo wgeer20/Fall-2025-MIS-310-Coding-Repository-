@@ -1,0 +1,115 @@
+from tkinter import *
+from PIL import Image, ImageTk
+import pandas as pd
+# -------------------------
+# Create the main window
+# -------------------------
+root = Tk()
+root.title("Central Connecticut State University")
+root.geometry("950x750") # large enough to display data clearly
+root.configure(bg="light blue")
+# -------------------------
+# Load and display the logo from your computer
+# -------------------------
+try:
+img = Image.open('C:\\Users\\Owner\\Pictures\\logo1.png') # your specified path
+img = img.resize((160, 160), Image.Resampling.LANCZOS)
+photo = ImageTk.PhotoImage(img)
+label_img = Label(root, image=photo, bg="light blue")
+label_img.pack(pady=10)
+except Exception as e:
+print("Logo not found or failed to load:", e)
+label_img = Label(root, text="[Logo Missing]", bg="light blue", font=("Arial", 12))
+label_img.pack(pady=10)
+# -------------------------
+# Add a title text label
+# -------------------------
+label_text = Label(
+root,
+text="Central Connecticut State University",
+font=("Arial", 22, "bold"),
+bg="light blue",
+fg="dark blue"
+)
+label_text.pack(pady=5)
+# -------------------------
+# Load CSV data
+# -------------------------
+try:
+data = pd.read_csv("midterm_exam.csv")
+except FileNotFoundError:
+print("Error: 'midterm_exam.csv' not found in this folder.")
+data = pd.DataFrame() # Empty fallback
+# -------------------------
+# Create a frame for the buttons (horizontal alignment)
+# -------------------------
+button_frame = Frame(root, bg="light blue")
+button_frame.pack(pady=10)
+# -------------------------
+# Create the output label area
+# -------------------------
+output_label = Label(
+root,
+text="",
+justify="left",
+bg="white",
+fg="black",
+anchor="nw",
+font=("Arial", 11),
+width=110,
+height=25,
+wraplength=850,
+relief="groove",
+)
+output_label.pack(pady=20)
+# -------------------------
+# Helper to clear previous output
+# -------------------------
+def clear_output():
+output_label.config(text="", bg="white")
+# -------------------------
+# Button functions
+# -------------------------
+def show_calendar():
+clear_output()
+if 'CalendarDate' in data.columns:
+df = data[['CalendarDate']].dropna()
+text = df.to_string(index=False)
+output_label.config(text=text, bg="#E0FFFF") # light cyan
+
+
+
+else:
+output_label.config(text="Column 'CalendarDate' not found in CSV.", bg="#E0FFFF")
+def show_buildings():
+clear_output()
+if 'Buildings' in data.columns:
+df = data[['Buildings']].dropna()
+text = df.to_string(index=False)
+output_label.config(text=text, bg="#FAFAD2") # light goldenrod yellow
+else:
+output_label.config(text="Column 'Buildings' not found in CSV.", bg="#FAFAD2")
+def show_faculty():
+clear_output()
+if 'FacultyName' in data.columns:
+df = data[['FacultyName']].dropna()
+text = df.to_string(index=False)
+output_label.config(text=text, bg="#E6E6FA") # lavender
+else:
+output_label.config(text="Column 'FacultyName' not found in CSV.", bg="#E6E6FA")
+# -------------------------
+# Create and place buttons horizontally
+# -------------------------
+btn_calendar = Button(button_frame, text="Calendar", command=show_calendar,
+bg="light green", width=18, font=("Arial", 11, "bold"))
+btn_calendar.grid(row=0, column=0, padx=10)
+btn_buildings = Button(button_frame, text="Buildings", command=show_buildings,
+bg="light green", width=18, font=("Arial", 11, "bold"))
+btn_buildings.grid(row=0, column=1, padx=10)
+btn_faculty = Button(button_frame, text="Faculty", command=show_faculty,
+bg="light green", width=18, font=("Arial", 11, "bold"))
+btn_faculty.grid(row=0, column=2, padx=10)
+# -------------------------
+# Run the GUI
+# -------------------------
+root.mainloop()
