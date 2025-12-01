@@ -1,0 +1,19 @@
+#Input number of Packages
+delivery = int(input(" Enter # of Packages to send : "))
+#Delivery type
+shipping = input("Enter r for standard, e for express: ")
+# Type of Shipping Payment
+if shipping== "r":
+rate = 10
+Shipping_type = "rate"
+elif shipping== "e":
+rate = 15
+Shipping_type = "express"
+else:
+rate = 0
+Shipping_type = "Invalid Shipping Type"
+#Delivery Charge
+Cost = delivery * rate
+#Display in Money Amount
+print(f"\nShipping type: {shipping})")
+print(f"and delivery is {delivery}")
